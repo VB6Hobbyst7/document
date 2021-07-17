@@ -1,0 +1,390 @@
+[Root]
+Most Recent Package=EG-R監視盤保守プロセス
+
+
+[Package|（ＪＲ東日本）保守画面プロセス|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=C:\(JR東日本)保守プロセス\SetUp
+
+[Package|（ＪＲ東日本）保守画面プロセス|Configure DAO ISAMs]
+Applicable=No
+
+[Package|（ＪＲ東日本）保守画面プロセス|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|（ＪＲ東日本）保守画面プロセス|Files Found]
+
+[Package|（ＪＲ東日本）保守画面プロセス|Files Released]
+CmnWatch.dll=
+CmnSystem.dll=
+CmnLog.dll=
+
+[Package|（ＪＲ東日本）保守画面プロセス|Missing Dependency Information]
+C:\WINNT\system32\UNLHA32.DLL=
+
+[Package|（ＪＲ東日本）保守画面プロセス|Out-of-Date Dependency Information]
+
+[Package|（ＪＲ東日本）保守画面プロセス|Files Added]
+
+[Package|（ＪＲ東日本）保守画面プロセス|Files Removed]
+
+[Package|（ＪＲ東日本）保守画面プロセス|Files In Project]
+C:\(JR東日本)保守プロセス\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=Yes
+C:\WINNT\system32\MSVBVM60.DLL=Yes
+C:\WINNT\system32\OLEAUT32.DLL=Yes
+C:\WINNT\system32\OLEPRO32.DLL=Yes
+C:\WINNT\system32\ASYCFILT.DLL=Yes
+C:\WINNT\system32\STDOLE2.TLB=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINNT\system32\VB6JP.DLL=Yes
+C:\WINNT\system32\UNLHA32.DLL=Yes
+C:\WINNT\system32\TABCTL32.OCX=Yes
+C:\WINNT\system32\TABCTJP.DLL=Yes
+C:\WINNT\system32\COMDLG32.OCX=Yes
+C:\WINNT\system32\CMDLGJP.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINNT\system32\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|（ＪＲ東日本）保守画面プロセス|Configure Registry Files]
+Applicable=No
+
+[Package|（ＪＲ東日本）保守画面プロセス|Configure Remote Servers]
+Applicable=No
+
+[Package|（ＪＲ東日本）保守画面プロセス|Install Locations]
+C:\(JR東日本)保守プロセス\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6JP.DLL=$(WinSysPath)
+C:\WINNT\system32\UNLHA32.DLL=$(WinSysPath)
+C:\WINNT\system32\TABCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\TABCTJP.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGJP.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|（ＪＲ東日本）保守画面プロセス|Configure Shared Files]
+Applicable=Yes
+C:\(JR東日本)保守プロセス\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=No
+
+[Package|（ＪＲ東日本）保守画面プロセス|Distribution]
+Type=single
+Size=
+Title=（ＪＲ東日本）保守画面プロセス
+
+[Package|（ＪＲ東日本）保守画面プロセス|IconGroups]
+Group0=（ＪＲ東日本）保守画面プロセス
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|（ＪＲ東日本）保守画面プロセス|（ＪＲ東日本）保守画面プロセス]
+Icon1=PROC_HOSYU.EXE
+Title1=（ＪＲ東日本）保守画面プロセス
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|（ＪＲ東日本）保守画面プロセス|Package]
+PackageFolder=C:\(JR東日本)保守プロセス\SetUp
+ProjectFolder=C:\(JR東日本)保守プロセス\JR_N_KANSI\Vb_apl\PROC_HOSYU
+ServerSideCab=
+File1=C:\(JR東日本)保守プロセス\SetUp\setup.exe
+File2=C:\(JR東日本)保守プロセス\SetUp\Setup.Lst
+File3=C:\(JR東日本)保守プロセス\SetUp\PROC_HOSYU.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|ＪＲ東日本保守プロセス|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=C:\（ＪＲ東日本）プロジェクト\SetUp
+
+[Package|ＪＲ東日本保守プロセス|Configure DAO ISAMs]
+Applicable=No
+
+[Package|ＪＲ東日本保守プロセス|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|ＪＲ東日本保守プロセス|Files Found]
+
+[Package|ＪＲ東日本保守プロセス|Files Released]
+CmnWatch.dll=
+CmnSystem.dll=
+CmnLog.dll=
+TsbCab.dll=
+UNLHA32.DLL=
+
+[Package|ＪＲ東日本保守プロセス|Missing Dependency Information]
+C:\WINNT\system32\UNLHA32.DLL=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnWatch.dll=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnSystem.dll=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnLog.dll=
+
+[Package|ＪＲ東日本保守プロセス|Out-of-Date Dependency Information]
+
+[Package|ＪＲ東日本保守プロセス|Files Added]
+
+[Package|ＪＲ東日本保守プロセス|Files Removed]
+c:\jr_n_kansi\vb_apl\proc_hosyu\proc_hosyu.exe=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnwatch.dll=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnsystem.dll=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnlog.dll=
+
+[Package|ＪＲ東日本保守プロセス|Files In Project]
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=No
+G:\WINDOWS\system32\msvbvm60.dll=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+G:\WINDOWS\system32\VB6JP.DLL=Yes
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnLog.dll=No
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnSystem.dll=No
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnWatch.dll=No
+G:\WINDOWS\system32\TABCTL32.OCX=Yes
+G:\WINDOWS\system32\TABCTJP.DLL=Yes
+G:\WINDOWS\system32\COMDLG32.OCX=Yes
+G:\WINDOWS\system32\CMDLGJP.DLL=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+G:\WINDOWS\system32\VB6STKIT.DLL=Yes
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|ＪＲ東日本保守プロセス|Configure Registry Files]
+Applicable=No
+
+[Package|ＪＲ東日本保守プロセス|Configure Remote Servers]
+Applicable=No
+
+[Package|ＪＲ東日本保守プロセス|Install Locations]
+C:\（ＪＲ東日本）プロジェクト\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6JP.DLL=$(WinSysPath)
+C:\WINNT\system32\UNLHA32.DLL=$(WinSysPath)
+C:\WINNT\system32\TABCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\TABCTJP.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGJP.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+G:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+G:\WINDOWS\system32\VB6JP.DLL=$(WinSysPath)
+G:\WINDOWS\system32\TABCTL32.OCX=$(WinSysPath)
+G:\WINDOWS\system32\TABCTJP.DLL=$(WinSysPath)
+G:\WINDOWS\system32\COMDLG32.OCX=$(WinSysPath)
+G:\WINDOWS\system32\CMDLGJP.DLL=$(WinSysPath)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+G:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|ＪＲ東日本保守プロセス|Configure Shared Files]
+Applicable=No
+C:\（ＪＲ東日本）プロジェクト\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=No
+
+[Package|ＪＲ東日本保守プロセス|Distribution]
+Type=single
+Size=
+Title=ＪＲ東日本保守プロセス
+
+[Package|ＪＲ東日本保守プロセス|IconGroups]
+Group0=ＪＲ東日本保守プロセス
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|ＪＲ東日本保守プロセス|ＪＲ東日本保守プロセス]
+Icon1=PROC_HOSYU.EXE
+Title1=ＪＲ東日本保守プロセス
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|ＪＲ東日本保守プロセス|Package]
+PackageFolder=C:\（ＪＲ東日本）プロジェクト\SetUp
+ProjectFolder=C:\JR_N_KANSI\Vb_apl\PROC_HOSYU
+ServerSideCab=
+File1=C:\（ＪＲ東日本）プロジェクト\SetUp\setup.exe
+File2=C:\（ＪＲ東日本）プロジェクト\SetUp\Setup.Lst
+File3=C:\（ＪＲ東日本）プロジェクト\SetUp\PROC_HOSYU.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
+
+
+[Package|EG-R監視盤保守プロセス|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=d:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\セットアップ
+
+[Package|EG-R監視盤保守プロセス|Configure DAO ISAMs]
+Applicable=No
+
+[Package|EG-R監視盤保守プロセス|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|EG-R監視盤保守プロセス|Files Found]
+
+[Package|EG-R監視盤保守プロセス|Files Released]
+CmnWatch.dll=
+CmnSystem.dll=
+CmnLog.dll=
+TsbCab.dll=
+UNLHA32.DLL=
+HoshuSystem.dll=
+CmnUtility.dll=
+
+[Package|EG-R監視盤保守プロセス|Missing Dependency Information]
+C:\WINNT\system32\UNLHA32.DLL=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnWatch.dll=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnSystem.dll=
+C:\JR_N_KANSI\Vb_apl\PROC_HOSYU\CmnLog.dll=
+C:\WINDOWS\system32\iphlpapi.dll=
+
+[Package|EG-R監視盤保守プロセス|Out-of-Date Dependency Information]
+C:\WINDOWS\system32\scrrun.dll=
+
+[Package|EG-R監視盤保守プロセス|Files Added]
+
+[Package|EG-R監視盤保守プロセス|Files Removed]
+c:\jr_n_kansi\vb_apl\proc_hosyu\proc_hosyu.exe=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnwatch.dll=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnsystem.dll=
+c:\jr_n_kansi\vb_apl\proc_hosyu\cmnlog.dll=
+d:\egr\eg-r\ko\v1004\ko_n_kansi\vb_apl\proc_hoshu\form\proc_hoshu.exe=
+
+[Package|EG-R監視盤保守プロセス|Files In Project]
+C:\WINDOWS\system32\msvbvm60.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\WINDOWS\system32\VB6JP.DLL=Yes
+C:\WINDOWS\system32\iphlpapi.dll=Yes
+C:\WINDOWS\system32\scrrun.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT.DLL=Yes
+C:\WINDOWS\system32\scrrnjp.dll=Yes
+C:\WINDOWS\system32\TABCTL32.OCX=Yes
+C:\WINDOWS\system32\TABCTJP.DLL=Yes
+C:\WINDOWS\system32\comdlg32.ocx=Yes
+C:\WINDOWS\system32\CMDLGJP.DLL=Yes
+C:\WINDOWS\system32\MSFLXGRD.OCX=Yes
+C:\WINDOWS\system32\FLXGDJP.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINDOWS\system32\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+D:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\PROC_HOSHU.EXE=No
+
+[Package|EG-R監視盤保守プロセス|Configure Registry Files]
+Applicable=No
+
+[Package|EG-R監視盤保守プロセス|Configure Remote Servers]
+Applicable=No
+
+[Package|EG-R監視盤保守プロセス|Install Locations]
+C:\（ＪＲ東日本）プロジェクト\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=$(AppPath)
+C:\WINNT\system32\MSVBVM60.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB6JP.DLL=$(WinSysPath)
+C:\WINNT\system32\UNLHA32.DLL=$(WinSysPath)
+C:\WINNT\system32\TABCTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\TABCTJP.DLL=$(WinSysPath)
+C:\WINNT\system32\COMDLG32.OCX=$(WinSysPath)
+C:\WINNT\system32\CMDLGJP.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+G:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+G:\WINDOWS\system32\VB6JP.DLL=$(WinSysPath)
+G:\WINDOWS\system32\TABCTL32.OCX=$(WinSysPath)
+G:\WINDOWS\system32\TABCTJP.DLL=$(WinSysPath)
+G:\WINDOWS\system32\COMDLG32.OCX=$(WinSysPath)
+G:\WINDOWS\system32\CMDLGJP.DLL=$(WinSysPath)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+G:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+G:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+D:\EGR\EG-R\KO\V1002\KO_N_KANSI\VB_APL\PROC_HOSHU\form\PROC_HOSHU.EXE=$(AppPath)
+C:\WINDOWS\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEAUT32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\OLEPRO32.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\ASYCFILT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\STDOLE2.TLB=$(WinSysPathSysFile)
+C:\WINDOWS\system32\VB6JP.DLL=$(WinSysPath)
+C:\WINDOWS\system32\iphlpapi.dll=$(WinSysPath)
+C:\WINDOWS\system32\scrrun.dll=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT.DLL=$(WinSysPathSysFile)
+C:\WINDOWS\system32\scrrnjp.dll=$(WinSysPath)
+C:\WINDOWS\system32\TABCTL32.OCX=$(WinSysPath)
+C:\WINDOWS\system32\TABCTJP.DLL=$(WinSysPath)
+C:\WINDOWS\system32\comdlg32.ocx=$(WinSysPath)
+C:\WINDOWS\system32\CMDLGJP.DLL=$(WinSysPath)
+C:\WINDOWS\system32\MSFLXGRD.OCX=$(WinSysPath)
+C:\WINDOWS\system32\FLXGDJP.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=$(AppPath)
+C:\WINDOWS\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+
+[Package|EG-R監視盤保守プロセス|Configure Shared Files]
+Applicable=Yes
+C:\（ＪＲ東日本）プロジェクト\JR_N_KANSI\Vb_apl\PROC_HOSYU\PROC_HOSYU.EXE=No
+D:\EGR\EG-R\KO\V1002\KO_N_KANSI\VB_APL\PROC_HOSHU\form\PROC_HOSHU.EXE=No
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=No
+
+[Package|EG-R監視盤保守プロセス|Distribution]
+Type=single
+Size=
+Title=EG-R監視盤保守プロセス
+
+[Package|EG-R監視盤保守プロセス|IconGroups]
+Group0=EG-R監視盤保守プロセス
+PrivateGroup0=-1
+Parent0=$(Programs)
+
+[Package|EG-R監視盤保守プロセス|EG-R監視盤保守プロセス]
+Icon1=PROC_HOSYU.EXE
+Title1=EG-R監視盤保守プロセス
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|EG-R監視盤保守プロセス|Package]
+PackageFolder=d:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\セットアップ
+ProjectFolder=D:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form
+ServerSideCab=
+File1=d:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\セットアップ\setup.exe
+File2=d:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\セットアップ\Setup.Lst
+File3=d:\EGR\EG-R\KO\V1004\KO_N_KANSI\VB_APL\PROC_HOSHU\form\セットアップ\PROC_HOSHU.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz
