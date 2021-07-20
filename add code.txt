@@ -23,10 +23,7 @@ const MN_VERSION_JIKAI item7{ "filename5", 0x04, "sMachineName6", "sFooterFile6"
 //TC6 NOW to NOW
 const MN_VERSION_JIKAI item8{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
 const MN_VERSION_JIKAI item9{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
-//TC6 NOW to NOW
-const MN_VERSION_JIKAI item10{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
-const MN_VERSION_JIKAI item11{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
-//TC4 WRK to NOW
+//TC7 WRK to NOW
 const MN_VERSION_JIKAI item12{ "filename7", 0x01, "sMachineName4", "sFooterFile4", "sFileDate4",  "sVersion4", "sComment4", 1, "strWriteDate4" };
 const MN_VERSION_JIKAI item13{ "filename7", 0x02, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
 const MN_VERSION_JIKAI item14{ "filename777", 0x02, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
@@ -45,19 +42,58 @@ void UTfrmGateVerKanri::test0() {
 
 	// Test input
 	uVersion.push_back(item1);
-	uVersion.push_back(item2);
-	uVersion.push_back(item3);
-
+	
+	sVerListDis();
 	// Expected result
-	uVersionExpected.push_back(item1);
-	uVersionExpected.push_back(item3);
-	uVersionExpected.push_back(item2);
 
-	sListboxSort();
 	compareFlg = true;
 	// Check expected output
 	for (int i = 0; i < uVersion.size(); i++) {
-		if (uVersion[i].sFileName != uVersionExpected[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+void UTfrmGateVerKanri::test1() {
+	
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item2);
+	
+	sVerListDis();
+	// Expected result
+
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+void UTfrmGateVerKanri::test2() {
+	
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item3);
+	
+	sVerListDis();
+	// Expected result
+
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
 			compareFlg = false;
 			return;
 		}
@@ -65,26 +101,44 @@ void UTfrmGateVerKanri::test0() {
 	CPPUNIT_ASSERT(compareFlg);
 }
 
-void UTfrmGateVerKanri::test1() {
+void UTfrmGateVerKanri::test3() {
 	// Clear struct
 	uVersion.clear();
 	uVersionExpected.clear();
 
 	// Test input
 	uVersion.push_back(item4);
-	uVersion.push_back(item6);
-	uVersion.push_back(item4);
-
+	uVersion.push_back(item5);
+	
+	sVerListDis();
 	// Expected result
-	uVersionExpected.push_back(item4);
-	uVersionExpected.push_back(item5);
-	uVersionExpected.push_back(item6);
 
-	sListboxSort();
 	compareFlg = true;
 	// Check expected output
 	for (int i = 0; i < uVersion.size(); i++) {
-		if (uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+void UTfrmGateVerKanri::test4() {
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item6);
+	uVersion.push_back(item7);
+	
+	sVerListDis();
+	// Expected result
+
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
 			compareFlg = false;
 			return;
 		}
@@ -92,25 +146,51 @@ void UTfrmGateVerKanri::test1() {
 	CPPUNIT_ASSERT(compareFlg);
 }
 
-void UTfrmGateVerKanri::test2() {
+void UTfrmGateVerKanri::test5() {
 	// Clear struct
+	uVersion.clear();
 	uVersionExpected.clear();
 
+	// Test input
+	uVersion.push_back(item8);
+	uVersion.push_back(item9);
+	
+	sVerListDis();
 	// Expected result
-	uVersionExpected.push_back(item4);
-	uVersionExpected.push_back(item5);
-	uVersionExpected.push_back(item6);
 
-	sListboxSort();
-
-	// Check expected output
 	compareFlg = true;
-	if (uVersion.size() == 0) {
-		compareFlg = false;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		iif (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
 	}
 	CPPUNIT_ASSERT(compareFlg);
 }
 
+void UTfrmGateVerKanri::test6() {
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item12);
+	uVersion.push_back(item13);
+	uVersion.push_back(item14);
+	sVerListDis();
+	// Expected result
+
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].sFileName != uVerData[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
 
 CppUnit::TestSuite* UTfrmGateVerKanri::suite()
 {
@@ -119,6 +199,10 @@ CppUnit::TestSuite* UTfrmGateVerKanri::suite()
 	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 0", &UTfrmGateVerKanri::test0));
 	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 1", &UTfrmGateVerKanri::test1));
 	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test2));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test3));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test4));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test5));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test6));
 
 	return suiteOfTests;
 }
