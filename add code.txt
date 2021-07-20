@@ -1,0 +1,163 @@
+#include "stdafx.h"
+
+#include <Windows.h>
+#include <vector>
+#include "..\togo\source\JR_T_KANSI\C_INC\CMN_DEF.h"
+#include "..\togo\source\JR_T_KANSI\C_APL\PROC_HOSHU_IF\Include\HoshuCMN_DEF.h"
+#include "UTfrmGateVerKanri.h"
+#include <WinBase.h>
+
+// Different data
+const MN_VERSION_JIKAI item1{ "filename1", 1, "sMachineName1", "sFooterFile1", "sFileDate1",  "sVersion1", "sComment1", 1, "strWriteDate1" };
+const MN_VERSION_JIKAI item2{ "filename2", 4, "sMachineName2", "sFooterFile2", "sFileDate2",  "sVersion2", "sComment2", 1, "strWriteDate2" };
+const MN_VERSION_JIKAI item3{ "filename3", 2, "sMachineName3", "sFooterFile3", "sFileDate3",  "sVersion3", "sComment3", 1, "strWriteDate3" };
+
+const MN_VERSION_JIKAI item4{ "filename4", 1, "sMachineName4", "sFooterFile4", "sFileDate4",  "sVersion4", "sComment4", 1, "strWriteDate4" };
+const MN_VERSION_JIKAI item5{ "filename4", 4, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
+const MN_VERSION_JIKAI item6{ "filename6", 2, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+
+std::vector<MN_VERSION_JIKAI> uVersion;
+std::vector<MN_VERSION_JIKAI> uVersionExpected;
+
+BOOL compareFlg = true;
+
+void UTfrmGateVerKanri::test0() {
+	
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item1);
+	uVersion.push_back(item2);
+	uVersion.push_back(item3);
+
+	// Expected result
+	uVersionExpected.push_back(item1);
+	uVersionExpected.push_back(item3);
+	uVersionExpected.push_back(item2);
+
+	sListboxSort();
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].sFileName != uVersionExpected[i].sFileName || uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+
+void UTfrmGateVerKanri::test1() {
+	// Clear struct
+	uVersion.clear();
+	uVersionExpected.clear();
+
+	// Test input
+	uVersion.push_back(item4);
+	uVersion.push_back(item6);
+	uVersion.push_back(item4);
+
+	// Expected result
+	uVersionExpected.push_back(item4);
+	uVersionExpected.push_back(item5);
+	uVersionExpected.push_back(item6);
+
+	sListboxSort();
+	compareFlg = true;
+	// Check expected output
+	for (int i = 0; i < uVersion.size(); i++) {
+		if (uVersion[i].iFolder != uVersionExpected[i].iFolder) {
+			compareFlg = false;
+			return;
+		}
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+
+void UTfrmGateVerKanri::test2() {
+	// Clear struct
+	uVersionExpected.clear();
+
+	// Expected result
+	uVersionExpected.push_back(item4);
+	uVersionExpected.push_back(item5);
+	uVersionExpected.push_back(item6);
+
+	sListboxSort();
+
+	// Check expected output
+	compareFlg = true;
+	if (uVersion.size() == 0) {
+		compareFlg = false;
+	}
+	CPPUNIT_ASSERT(compareFlg);
+}
+
+
+CppUnit::TestSuite* UTfrmGateVerKanri::suite()
+{
+	CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("UTfrmGateVerKanri");
+
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 0", &UTfrmGateVerKanri::test0));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 1", &UTfrmGateVerKanri::test1));
+	suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("Test 2", &UTfrmGateVerKanri::test2));
+
+	return suiteOfTests;
+}
+--------------------------------
+#include "stdafx.h"
+
+#include <Windows.h>
+#include <vector>
+#include "..\togo\source\JR_T_KANSI\C_INC\CMN_DEF.h"
+#include "..\togo\source\JR_T_KANSI\C_APL\PROC_HOSHU_IF\Include\HoshuCMN_DEF.h"
+//#include "UTfrmPing.h"
+#include "UTfrmGateVerKanri.h"
+#include <WinBase.h>
+//#ifdef OPERATEINI_FILE
+//#undef OPERATEINI_FILE
+//#define OPERATEINI_FILE      PATH_INI "OPERATE\OPERATE1.INI"
+//#endif
+
+// Different data
+const MN_VERSION_JIKAI TC1{ "filename1", 0x01, "sMachineName1", "sFooterFile1", "sFileDate1",  "sVersion1", "sComment1", 1, "strWriteDate1" };
+
+const MN_VERSION_JIKAI item2{ "filename2", 4, "sMachineName2", "sFooterFile2", "sFileDate2",  "sVersion2", "sComment2", 1, "strWriteDate2" };
+const MN_VERSION_JIKAI item3{ "filename3", 2, "sMachineName3", "sFooterFile3", "sFileDate3",  "sVersion3", "sComment3", 1, "strWriteDate3" };
+
+std::vector<MN_VERSION_JIKAI> uVersion;
+std::vector<MN_VERSION_JIKAI> uVerData;
+// Different data
+BOOL flag = true;
+void UTfrmGateVerKanri::test0() {
+    uVersion.push_back(TC1);
+    sVerListDisp();
+    for (int i = 0; i < uVersion.size(); i++) {
+        if (uVersion[i].sFileName != uVerData[i].sFileName) {
+            flag = false;
+            return;
+        }
+    }
+    CPPUNIT_ASSERT(flag);
+}
+//
+//void UTfrmGateVerKanri::test1() {
+//
+//}
+//
+//void UTfrmGateVerKanri::test2() {
+//
+//}
+//void UTfrmGateVerKanri::test3() {
+//
+//}
+CppUnit::TestSuite* UTfrmGateVerKanri::suite()
+{
+    CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("UTfrmGateVerKanri");
+
+    suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmGateVerKanri>("test 0", &UTfrmGateVerKanri::test0));
+
+    return suiteOfTests;
+}
