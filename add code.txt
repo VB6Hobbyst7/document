@@ -8,16 +8,32 @@
 #include <WinBase.h>
 
 // Different data
-const MN_VERSION_JIKAI item1{ "filename1", 1, "sMachineName1", "sFooterFile1", "sFileDate1",  "sVersion1", "sComment1", 1, "strWriteDate1" };
-const MN_VERSION_JIKAI item2{ "filename2", 4, "sMachineName2", "sFooterFile2", "sFileDate2",  "sVersion2", "sComment2", 1, "strWriteDate2" };
-const MN_VERSION_JIKAI item3{ "filename3", 2, "sMachineName3", "sFooterFile3", "sFileDate3",  "sVersion3", "sComment3", 1, "strWriteDate3" };
+//TC1
+const MN_VERSION_JIKAI item1{ "filename1", 0x01, "sMachineName1", "sFooterFile1", "sFileDate1",  "sVersion1", "sComment1", 1, "strWriteDate1" };
+//TC2
+const MN_VERSION_JIKAI item2{ "filename2", 0x02, "sMachineName2", "sFooterFile2", "sFileDate2",  "sVersion2", "sComment2", 1, "strWriteDate2" };
+//TC3
+const MN_VERSION_JIKAI item3{ "filename3", 0x04, "sMachineName3", "sFooterFile3", "sFileDate3",  "sVersion3", "sComment3", 1, "strWriteDate3" };
+//TC4 WRK to NOW
+const MN_VERSION_JIKAI item4{ "filename4", 0x01, "sMachineName4", "sFooterFile4", "sFileDate4",  "sVersion4", "sComment4", 1, "strWriteDate4" };
+const MN_VERSION_JIKAI item5{ "filename4", 0x02, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
+//TC5 WRK to OLD
+const MN_VERSION_JIKAI item6{ "filename5", 0x01, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+const MN_VERSION_JIKAI item7{ "filename5", 0x04, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+//TC6 NOW to NOW
+const MN_VERSION_JIKAI item8{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+const MN_VERSION_JIKAI item9{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+//TC6 NOW to NOW
+const MN_VERSION_JIKAI item10{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+const MN_VERSION_JIKAI item11{ "filename6", 0x02, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
+//TC4 WRK to NOW
+const MN_VERSION_JIKAI item12{ "filename7", 0x01, "sMachineName4", "sFooterFile4", "sFileDate4",  "sVersion4", "sComment4", 1, "strWriteDate4" };
+const MN_VERSION_JIKAI item13{ "filename7", 0x02, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
+const MN_VERSION_JIKAI item14{ "filename777", 0x02, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
 
-const MN_VERSION_JIKAI item4{ "filename4", 1, "sMachineName4", "sFooterFile4", "sFileDate4",  "sVersion4", "sComment4", 1, "strWriteDate4" };
-const MN_VERSION_JIKAI item5{ "filename4", 4, "sMachineName5", "sFooterFile5", "sFileDate5",  "sVersion5", "sComment5", 1, "strWriteDate5" };
-const MN_VERSION_JIKAI item6{ "filename6", 2, "sMachineName6", "sFooterFile6", "sFileDate6",  "sVersion6", "sComment6", 1, "strWriteDate6" };
 
 std::vector<MN_VERSION_JIKAI> uVersion;
-std::vector<MN_VERSION_JIKAI> uVersionExpected;
+std::vector<MN_VERSION_JIKAI> uVerData;
 
 BOOL compareFlg = true;
 
