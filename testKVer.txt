@@ -1,0 +1,47 @@
+#include "stdafx.h"
+#include "iostream"
+#include <Windows.h>
+#include <vector>
+#include "..\togo\source\JR_T_KANSI\C_INC\CMN_DEF.h"
+#include "..\togo\source\JR_T_KANSI\C_APL\PROC_HOSHU_IF\Include\HoshuCMN_DEF.h"
+#include "UTfrmKVer_Kill_TusinConnect.h"
+#include <WinBase.h>
+//std::vector<MACHINE_IP_INFO> vtMachineList;  // comment this line to call global variable
+//define test case for OperatePing
+// test case 0;
+// no jikai valid
+
+//TC0
+const std::string TC0 = "36.0.0.5";
+//TC1
+const std::string TC1 = "--.--.--.-- ";
+//TC2
+const std::string TC2 = "36.0.0.5";
+//TC3
+const std::string TC3 = "--.--.--.-- ";
+//TC4
+const std::string TC4 = "36.0.0.5";
+//TC5
+const std::string TC5 = "--.--.--.-- ";
+
+void UTfrmKVer_Kill_TusinConnect::TC1_Kill_TusinConnect() {
+    BOOL flag = true;
+    BOOL check = frmKVer_Kill_TusinConect(ML_DT_JIKAI);
+    CPPUNIT_ASSERT_EQUAL(flag, check);
+}
+
+void UTfrmKVer_Kill_TusinConnect::TC2_Kill_TusinConnect() {
+    BOOL flag = true;
+    BOOL check = frmKVer_Kill_TusinConect(ML_DT_ICM);
+    CPPUNIT_ASSERT_EQUAL(flag, check);
+}
+//test suite
+CppUnit::TestSuite* UTfrmKVer_Kill_TusinConnect::suite()
+{
+    CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("UTfrmKVer_Kill_TusinConnect");
+
+    suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmKVer_Kill_TusinConnect>("test 0", &UTfrmKVer_Kill_TusinConnect::TC1_Kill_TusinConnect));
+    suiteOfTests->addTest(new CppUnit::TestCaller<UTfrmKVer_Kill_TusinConnect>("test 1", &UTfrmKVer_Kill_TusinConnect::TC2_Kill_TusinConnect));
+
+    return suiteOfTests;
+}

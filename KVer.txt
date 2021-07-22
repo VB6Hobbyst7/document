@@ -1,0 +1,1269 @@
+/** @file		frmKVer.cpp
+*  @brief		Automatic ticket gate version control
+*  @author		TSDV
+*  @date		2021/07/06 Create
+*/
+
+// Include block
+#include		<stdio.h>
+#include		<string>
+#include		<winsock2.h>
+#include		<windows.h>
+#include		<iphlpapi.h>
+#include		<icmpapi.h>
+#include		<stdio.h>
+#include		<string>
+#include		<list>
+#include		<vector>
+#include		<shlwapi.h>
+#include		<boost/algorithm/string.hpp>
+
+#include        <sstream>
+#include        <fstream>
+#include        <codecvt>
+                
+                
+#include        <iterator>
+#include        <iostream>
+#include        <fstream>
+#include        <vector>
+#include        <string>
+#include        <clocale>
+#include        <filesystem>
+
+#include		"HoshuIFGlobal.h"
+#include		"HoshuLog.h"
+#include		"Decl.h"
+#include		"HoshuCMN_DEF.h"
+#include		"HoshuCMN_FIL.h"
+#include		"HoshuCMN_ENUM_LOCAL.h"
+#include		"CMN_LOCAL.h"
+#include		"CMN_MAIL.h"
+
+#include		"CIdInfProc.h"
+#include		"CSystemSetting.h"
+#include		"CJsonData.h"
+
+
+using namespace std;
+
+
+extern "C" BOOL NEG_DLL STD_CALL dllKansiCreateVerFile(CONST DWORD, LPCTSTR, DWORD);
+extern "C" BOOL NEG_DLL STD_CALL dllCheckAplVersion(CONST DWORD, LPCTSTR, DWORD);
+extern BOOL NEG_DLL STD_CALL dllChangeAttributeContents(CONST LPCTSTR);
+extern BOOL NEG_DLL STD_CALL CheckAppStart(LPCTSTR lpctstr);
+
+//extern VOID SendMessageProgress(INT intCmdCode, INT strSyubetsu = 0);
+extern long GetFileSize(std::string fileName);
+extern VOID psFolderPathGet(std::string sFullPass, std::string& sFolderPath);
+extern VOID psFileNameGet(CHAR*, CHAR*, CHAR*);	// HoshuDEF.cpp
+extern BOOL pubFuncUpdateUnkaiStatus(int nType, int nStatus);
+extern BOOL  pubFuncAplUpdateUnkaiStatus(std::string szKey, int nStatus);
+extern BOOL funcUpdateCopyExecParam(LONG lKind);
+extern CHAR* replace(CHAR* s, CONST CHAR* before, CONST CHAR* after); // frmSyusyu.cpp
+extern VOID SendMessageProgress(INT intCmdCode, INT strSyubetsu = 0);
+
+extern VOID fnCopyFileToDirectory(std::string sFromFilePath, std::string sToDirectoryPath); // Hoshu_DEF.cpp
+extern std::string gsGetStationEkiName();	// Hoshu_DEF.cpp
+extern BOOL gblnCornerSet[MAX_CORNER_NO];	// Hoshu_DEF.cpp
+extern BOOL pubFuncAplEndRequest();	// Hoshu_DEF.cpp
+extern GOKI_INF gudtDisp[MAX_GATE_NO];
+extern HANDLE fDssMailOpen(LPSTR lpsMailName);
+extern INT fDssMailWrite(HANDLE hMailHandle, DWORD dwWriteSize, ML_KYOTU_INF& strWriteData);
+extern INT fDssMailClose(HANDLE hMailHandle);
+
+// 監視装置設定データエリア
+
+
+#define HEADERTITLE_WRK	 "統合監視盤バージョン（ワーク）："
+#define HEADERTITLE_NOW		"　　　　　　　　　　（実行）　："
+#define HEADERTITLE_OLD		"　　　　　　　　　　（旧）　　："
+#define HEADERVERSION_NON	"--.--.--.--"
+#define MAIL_SLOT_HOSHU		"\\\\.\\MailSlot\\保守"   // TODO: update to link to CMN_MSLT.h
+#define APL_INTERVAL  390000  //       ' アプリ起動タイマデフォルト値
+#define LOG_INTERVAL  30000 
+#define DESHU_ID		242
+#define DESHU_CONNECT	1
+#define ERROR_TUSHIN_DISP	1
+
+enum Ml_KIKIType
+{
+	ML_DT_JIKAI = 0,                 //自改
+	ML_DT_ICM,                       //判定IC-M
+	ML_DT_DESHU,                     //デ集
+	ML_DT_ENKAKU,                    //遠隔
+	ML_DT_ICSVR,                     //IDサーバ
+	ML_DT_TAKU                       //操作卓                       ' EG20 V2.1.0.1 追加
+};
+
+vector<string> strList;
+vector<FRM_KVER_DISP> vListData;
+
+TAG_MAIL_CONNECT_SET_REQ_CMD udtMail;
+
+INT		miCornerNo;                      //'コーナー番号
+BOOL	mbMisouResult;                   //'未送データ作成結果　TRUE：正常　FALSE：異常
+INT		miErrorSts;                      //'異常時通信種別
+INT		miErrorDisp;
+//
+//Private Const APL_INTERVAL = 390000         ' アプリ起動タイマデフォルト値
+//Private Const LOG_INTERVAL = 30000          ' ログ起動タイマデフォルト値(30秒)
+//Dim lngAplMAX_Time As Long                  ' INI取得設定値（ＡＰＬ）
+//Dim lngLogMAX_Time As Long                  ' INI取得設定値（ログ）
+//Dim lngtime        As Long                  ' 現在タイマ値
+//Dim lngChangeKind  As Long                  ' バージョン切替種別
+//' EG20 V3.3.0.1【結合TR-No.184】 追加終了
+
+LONG mlngChkFolderType;
+LONG lngAplMAX_Time;           
+LONG lngLogMAX_Time;			
+LONG lngtime;					
+LONG lngChangeKind;
+
+
+BOOL frmKVer_CmdCopyOld_Jikko(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_CheckSimekiriMisouUmu();
+BOOL frmKVer_CmdClear(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_CmdCopyBaitai_Work(INT iFolder, string sInputPass, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_CmdCopyWork_Jikko(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_CmdOutPut(std::string sInputPass);
+BOOL frmKVer_CmdRefesh(INT iFolder, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_CmdRemove();
+BOOL frmKVer_ConnctErrorProc(LONG iTusinSts, LONG iErrorDisp);
+BOOL frmKVer_Connect_TusinConect(Ml_KIKIType type);
+BOOL frmKVer_FDInstall(string sInput);
+BOOL frmKVer_FormLoad(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverData);
+INT frmKVer_GetGateConectSet(INT iGouki);
+INT frmKVer_GetJyouiKikiConectSet(INT iKansiId);
+BOOL frmKVer_Kill_TusinConect(Ml_KIKIType type);
+VOID frmKVer_SendMailHeader(LONG dwId, LONG dwSize);
+VOID frmKVer_VersionDisp(INT iFolder, FRM_KVER_LOAD* &stKverData);
+BOOL frmKVer_WorkFolderRemove();
+BOOL frmKVer_WorktoNow_Before1();
+// Variable block
+
+/** @brief		frmKVer_FormLoad
+*				Get all version of Ticket gate and return to view
+*  @param		iFolder: folder number
+*  @param		stKverData: an object storage data version
+*  @return		TRUE: load OK, FALSE: load NG
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_FormLoad(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverData)
+{
+	//Me.Top = 0
+	//	Me.Left = 0
+	//	Me.Height = 9000
+	//	Me.Width = 12000
+
+	//	'「監視盤バージョン管理画面：表示」
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_ETC, KANSI_VERASION_KANRI_GAMEN_START, 0)
+
+	//	' EG20 V5.13.0.1【プログレスバー表示機能見直し対応】追加開始
+	//	'プログレスバーを表示する
+	//	Call SendMessageProgress(ML_ID_PRGBAR_SHOW_REQ, PRG_VERSION_KANRI)
+	//	' EG20 V5.13.0.1【プログレスバー表示機能見直し対応】追加終了
+
+	//	'初期化
+	//	lstKan.Clear
+	//	mlngChkFolderType = 0
+
+	//	'フォルダ選択部：選択有り
+	//	chkFolder(0).Value = 1
+	//	chkFolder(1).Value = 1
+	//	chkFolder(2).Value = 1
+
+	//	mlngChkFolderType = 7
+
+	//mlngChkFolderType = 7;
+	SendMessageProgress(ML_ID_PRGBAR_SHOW_REQ, PRG_VERSION_KANRI);
+
+	frmKVer_VersionDisp(mlngChkFolderType, stKverData); // 7 is all type
+
+	SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+
+	//メール受信用のメール受信用のタイマ値を設定する
+	//	tmrMail.Interval = MN_MAIL_INTERVAL
+	//	tmrMail.Enabled = False
+
+	//	' EG20 V3.3.0.1【結合TR-No.184】 追加開始
+	//	' INIファイルよりアプリ起動タイマ値を取得
+	//	lngAplMAX_Time = GetPrivateProfileInt(APLCHKTIMER_SEC, APLSTATIMER_KEY, _
+	//		APL_INTERVAL, HOSHU_FILE)
+	//	' 取得値が0の場合、デフォルト値を設定
+	//	If lngAplMAX_Time = 0 Then
+	//	lngAplMAX_Time = APL_INTERVAL
+	//	End If
+
+	//	' タイマ値設定
+	//	tmrAplTimer.Interval = MN_MAIL_INTERVAL
+	//	tmrAplTimer.Enabled = False
+
+	//	' INIファイルよりログ起動タイマ値を取得
+	//	lngLogMAX_Time = GetPrivateProfileInt(LOGCHKTIMER_SEC, APLSTATIMER_KEY, _
+	//		LOG_INTERVAL, HOSHU_FILE)
+	//	' 取得値が0の場合、デフォルト値を設定
+	//	If lngLogMAX_Time = 0 Then
+	//	lngLogMAX_Time = LOG_INTERVAL
+	//	End If
+
+	//	' タイマ値設定
+	//	tmrLogTimer.Interval = MN_MAIL_INTERVAL
+	//	tmrLogTimer.Enabled = False
+
+	//	' 切替種別を初期化
+	//	lngChangeKind = 0
+
+	// long.ld missing set tmrMail
+	return true;
+}
+/** @brief		frmKVer_VersionDisp
+*				Get all version data from KANSI_VERSION_CSVFILE 
+*  @param		iFolder: folder number
+*  @param		stKverData: object output version information
+*  @return		TRUE: load OK, FALSE: load NG
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+
+VOID frmKVer_VersionDisp(int iFolder, FRM_KVER_LOAD* &stKverData)
+{
+
+	//get caption
+	string strCaption;
+	// strList = sFileName & strVer & strWork3
+	//	lstKan.AddItem(strList)
+
+	//'媒体出力釦押下不可
+	//	cmdOutPut.Enabled = False
+
+	//	'リスト初期化
+	//	lstKan.Clear
+
+	//	'作業エリア初期化
+	//	strWork = ""
+
+	//	'全体バージョン初期化
+	//	strVerData = ""
+
+	//	bRet = True
+	//	'///////////////////////////////////////////////////////////////////////////////////////////
+	//	'/ 保守専用関数:操作卓バージョンファイル（画面表示用）作成
+	//	'///////////////////////////////////////////////////////////////////////////////////////////
+	//	bRet = dllKansiCreateVerFile(mlngChkFolderType, KANSI_VERSION_CSVFILE, VERLISTKIND_DISP)
+
+	
+
+	 BOOL bRet = dllKansiCreateVerFile(iFolder, KANSI_VERSION_CSVFILE, VERLISTKIND_DISP); // long.ld
+
+	//' バージョンファイル成功
+	//	If bRet Then
+	//	'「バージョン情報ファイル作成正常」ログ出力
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_FILE, CREATE_FILE_OK, 0)
+	//	' バージョンファイル失敗
+
+	if (true) sHoshuLogTraceReq(LTYP_NORMAL, L3AN_FILE, CREATE_FILE_OK,0);
+	else
+	{
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_FILE, CREATE_FILE_ERROR, lngErrCode);
+		return;
+	}
+	//If Len(Trim(Dir(KANSI_VERSION_CSVFILE))) = 0 Then
+	//Exit Sub
+	//End If
+	if(GetFileSize(KANSI_VERSION_CSVFILE)== 0) return;
+		
+	try 
+	{
+		
+		FILE * file = fopen(KANSI_VERSION_CSVFILE,"r");
+		
+		std::setlocale(LC_ALL, "japanese");
+		wchar_t  line[MAX_PATH_SIZE];
+		string	 strVerData;
+		string	 strWork;
+
+		//Line Input #intFileNo, strWork
+
+		//	If(Trim(strWork) = "") Then
+		//	strVerData = HEADERTITLE_WRK & HEADERVERSION_NON & vbCrLf
+		//	Else
+		//	'全体バージョン文字列作成
+		//	strVerData = strWork & vbCrLf
+		//	End If
+		fgetws(line, MAX_PATH_SIZE, file);
+		//wline = line;
+		strWork = L_U8(line);
+		//wline.erase();
+		if (strWork.empty())
+		{
+			strVerData = HEADERTITLE_WRK HEADERVERSION_NON;
+		}
+		else strVerData = strWork;
+
+		strcpy(stKverData->cWorkVer, strVerData.c_str());
+		strVerData = "";
+		////Line Input #intFileNo, strWork
+		////	If(Trim(strWork) = "") Then
+		////	strVerData = strVerData & HEADERTITLE_NOW & HEADERVERSION_NON & vbCrLf
+		////	Else
+		////	strVerData = strVerData & strWork & vbCrLf
+		////	End If
+
+		
+		fgetws(line, MAX_PATH_SIZE, file);
+		strWork = L_U8(line);;
+		if (strWork.empty())
+		{
+			strVerData = HEADERTITLE_NOW HEADERVERSION_NON;
+		} 
+		else strVerData = strVerData + strWork ;
+		strcpy(stKverData->cExVer, strVerData.c_str());
+		strVerData = "";
+		////Line Input #intFileNo, strWork
+		////	If(Trim(strWork) = "") Then
+		////	strVerData = strVerData & HEADERTITLE_OLD & HEADERVERSION_NON & vbCrLf
+		////	Else
+		////	strVerData = strVerData & strWork & vbCrLf
+		////	End If
+
+		fgetws(line, MAX_PATH_SIZE, file);
+		strWork = L_U8(line);
+		if (strWork.empty())
+		{
+			strVerData = HEADERTITLE_OLD HEADERVERSION_NON;
+		} 
+		else strVerData = strVerData + strWork;
+
+		strcpy(stKverData->cOldVer, strVerData.c_str());
+		strVerData = "";
+		////	'全体バージョン出力
+		////	lblKansibanVersion.Caption = strVerData
+
+		////	strWork = ""
+
+		fgetws(line, MAX_PATH_SIZE, file);
+		strWork = L_U8(line);
+
+		//strCaption = strVerData;
+	
+		while (fgetws(line, MAX_PATH_SIZE, file))
+		{
+			FRM_KVER_DISP dispData;
+			strWork = L_U8(line);
+			//strWork1 = Right(strWork, 42)
+			//	strWork2 = Mid(strWork1, 1, 12)   'サイズのみ抽出
+			//	strWork3 = Mid(strWork1, 13, 30)
+
+			//	strVer = Format(strWork2, "#,##0")
+			//	strVer = Format(strVer, "@@@@@@@@@@@@")
+			//	sFileName = StrConv(MidB(StrConv(Mid(strWork, 1, 27) & Space(20), vbFromUnicode), 1, 27), vbUnicode)
+			//	strList = sFileName & strVer & strWork3
+			if (!strWork.empty())
+			{
+				string strWork1 = strWork.substr(strWork.size() - 43, 42);
+				string strWork2 = strWork1.substr(30,12 ); // version
+				string strWork3 = strWork1.substr(13, 18); // datetime
+				string strSize	= strWork1.substr(0, 12); // size
+
+				string sFileName = strWork.substr(0,20);
+				string sFolder	 = strWork.substr(21, 6);
+
+				strcpy(dispData.cFileName, sFileName.c_str());
+				strcpy(dispData.cVersion, strWork2.c_str());
+				strcpy(dispData.cUpdateDate, strWork3.c_str());
+				strcpy(dispData.cSize, strSize.c_str());
+				strcpy(dispData.cFolder, sFolder.c_str());
+				//add data
+				stKverData->vtVersionDips.push_back(dispData);
+			}
+			
+
+		}
+		if (fclose(file) != 0)
+		{
+			/*sErrEventName = LOG_ERR_FILE_CLOSE;
+			throw sErrEventName;*/
+		}
+
+	}
+	catch (std::exception& e ) 
+	{
+		//lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE
+		//	Call sLogTraceReq(LTYP_ERROR, L3AN_FILE, CREATE_FILE_ERROR, lngErrCode)
+		//	'ファイルクローズ
+		//	Close #intFileNo
+
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_FILE, CREATE_FILE_ERROR, lngErrCode);
+		
+	}
+}
+
+/** @brief		frmKVer_CmdCopyBaitai_Work
+*				Copy file install from H:/ to work
+*  @param		sInputPass input from client file path
+*  @param		iFolder input filter view
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdCopyBaitai_Work(int iFolder, string sInputPass, FRM_KVER_LOAD* &stKverData)
+{
+	//Call sLogTraceReq(LTYP_NORMAL, L3AN_ETC, VERASION_INFO_USB_COPY_WRK_BUTTOM, 0)
+
+	//	sCmdBtnEnabled False                        ' 画面操作不可
+	//	'インストール媒体をワークフォルダ内にコピーする
+	//	Call sFDInstall
+	//	sCmdBtnEnabled True                         ' 画面操作可
+	//	Call psVersionDisp
+
+	//	' EG20 V5.6.0.1追加開始
+	//	pubSubCreateFolder(PATH_KANSI_APLNEW)
+	//	pubSubCreateFolder(PATH_KANSI_APLOLD)
+	//	' EG20 V5.6.0.1追加終了
+	//	' EG20 V5.13.0.1【プログレスバー表示機能見直し対応】追加開始
+	//	'プログレスバーを消去する
+	//	Call SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ)
+
+	frmKVer_FDInstall(sInputPass);
+	frmKVer_VersionDisp(iFolder, stKverData);
+
+	CreateDirectory(PATH_KANSI_APLNEW, NULL);
+	CreateDirectory(PATH_KANSI_APLOLD, NULL);
+
+	SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+	return TRUE;
+}
+
+/** @brief		frmKVer_FDInstall
+*				Copy the installation media file to your work folder
+*  @param		sInputPass file name 
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_FDInstall(string sInputPass)
+{
+	string ExecDirectory;
+	CHAR sFileName[MAX_PATH];
+	CHAR sFileKaku[MAX_PATH];
+	CHAR sCurrentDirectory[MAX_PATH];
+	string strCmd;
+	DWORD lngProcId;
+	//CurrentDirectory = CurDir$()
+	//	Call psFolderPathGet(sInputPass, ExecDirectory)
+	//	Call ChDir(ExecDirectory)
+	//	' ファイル名前取得
+	//	psFileNameGet sInputPass, FileName, FileKaku
+	//	If UCase(FileKaku) = "VBS" Then
+	//	ExecCommand = "wscript.exe " & sInputPass
+	//	Else
+	//	ExecCommand = sInputPass
+	//	End If
+	//	lngProcId = Shell(ExecCommand, vbNormalFocus)
+	//	' EG20 V3.6.0.1【統合TR-No.273修正対応】追加終了
+
+	//	hProc = OpenProcess(PROCESS_ALL_ACCESS, False, lngProcId)   ' プロセスハンドルを取得します。
+	//	If hProc > 0 Then                                           ' プロセスハンドルを取得できた場合
+	//	Call dllWaitForSingleObject(hProc)                      ' プロセスがシグナル状態になるまで待ちます。
+	//	CloseHandle hProc                                       ' プロセスハンドルを解放します。
+	//	End If
+	try
+	{
+		GetCurrentDirectory(MAX_PATH,sCurrentDirectory );
+		psFolderPathGet(sInputPass, ExecDirectory);
+		SetCurrentDirectory(ExecDirectory.c_str());
+
+		psFileNameGet((CHAR*)sInputPass.c_str(), sFileName, sFileKaku);
+		boost::to_upper(sFileKaku);
+		if (sFileKaku == "VBS") strCmd = "wscript.exe " + sInputPass;
+		else strCmd = sInputPass;
+
+		lngProcId = system(strCmd.c_str());
+		HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, false, lngProcId);
+
+		if (hProc)
+		{
+			dllWaitForSingleObject(hProc);
+			CloseHandle(hProc);
+		}
+		//ChDrive "C"
+		//	'EG20 V30.0.3.1 ADD END
+		//	Call ChDir(CurrentDirectory)
+
+		SetCurrentDirectory("C"); // ??
+		SetCurrentDirectory(sCurrentDirectory);
+		//Call pubFuncUpdateUnkaiStatus(BootInfoHoshuType.TYPE_KANSI, BOOTINFO_UNKAI_ARI)
+		//Call pubFuncAplUpdateUnkaiStatus(BOOTINFO_KEYNAMEKANSI, BOOTINFO_UNKAI_ARI)
+		pubFuncUpdateUnkaiStatus(TYPE_KANSI, BOOTINFO_UNKAI_ARI);
+		pubFuncAplUpdateUnkaiStatus(BOOTINFO_KEYNAMEKANSI, BOOTINFO_UNKAI_ARI);
+		//Call funcUpdateCopyExecParam(KanendReq_ProcType.ML_DT_CLEAR)
+		funcUpdateCopyExecParam(ML_DT_CLEAR);
+
+		//dllChangeAttributeContents(PATH_KANSI_APLNEW)
+		dllChangeAttributeContents(PATH_KANSI_APLNEW);
+
+	}
+	catch (std::exception& e) 
+	{
+		dllChangeAttributeContents(PATH_KANSI_APLNEW);
+		SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_FILE, VERASION_INFO_USB_COPY_WRK_ERROR, lngErrCode);
+		return false;
+	}
+	return true;
+}
+
+/** @brief		frmKVer_CmdRefesh
+*				Copy from Work to Now folder
+*  @param		iFolder: folder number
+*  @param		stKverData: an object storage data version
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdCopyWork_Jikko(int iFolder, FRM_KVER_LOAD* &stKverDatat)
+{
+	//Dim udtSendData As ML_KANEND_REQ_CMD  ' 共通エリア
+	//	Dim lngSendSize As Long               ' 送信するメールサイズ
+	//	Dim lngErrCode  As Long               ' エラーコード
+	//	Dim bRet        As Boolean            ' メール送信処理戻り値
+	//	Dim iResponse   As Integer            ' MsgBoxボタンコード
+	//	Dim iAplChk     As Integer            ' アプリ起動チェック戻り値    'EG20 V3.6.0.1【03統合TR - No.22修正対応】追加
+
+	//	On Error Resume Next
+
+	//	'「バージョン管理画面：ワーク→実行コピー釦押下」ログ出力
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_ETC, VERASION_INFO_WRK_COPY_NOW_BUTTOM, 0)
+
+	//	' EG20 V5.6.0.1追加開始
+	//	pubSubCreateFolder(PATH_KANSI_APLNEW)
+	//	pubSubCreateFolder(PATH_KANSI_APLOLD)
+
+	CreateDirectory(PATH_KANSI_APLNEW,NULL);
+	CreateDirectory(PATH_KANSI_APLOLD,NULL);
+
+	//bRet = dllCheckAplVersion(1, PATH_KANSI, 2)
+	//	If bRet = False Then
+	//	MsgBox "異常終了しました。", vbCritical, "ワーク→実行 コピー"
+	//	Exit Sub
+	//	End If
+	//	'EG20 V3.6.0.1【03統合TR-No.372修正対応】追加終了
+
+	//	' EG20 V7.3.0.1【EG20_KANSI03_01】ADD START
+	//	'ワーク→実行コピー前処理
+	//	bRet = fWorktoNow_Before1
+	//	If bRet = False Then
+	//	Exit Sub
+	//	End If
+
+	BOOL bRet = dllCheckAplVersion(1, PATH_KANSI, 2);
+	if (!bRet) return ERROR;
+
+	BOOL result = frmKVer_WorktoNow_Before1();
+	if (!result) return ERROR;
+
+	return TRUE;
+}
+
+/** @brief		frmKVer_CmdCopyOld_Jikko
+*				Copy from Old to Now folder
+*  @param		iFolder: folder number
+*  @param		stKverData: an object storage data version
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdCopyOld_Jikko(int iFolder, FRM_KVER_LOAD* &stKverDatat)
+{
+	_TAG_MAIL_KANEND_REQ udtSendData;
+	//Call sLogTraceReq(LTYP_NORMAL, L3AN_ETC, VERASION_INFO_OLD_COPY_NOW_BUTTOM, 0)
+
+	//	' EG20 V5.6.0.1追加開始
+	//	pubSubCreateFolder(PATH_KANSI_APLNEW)
+	//	pubSubCreateFolder(PATH_KANSI_APLOLD)
+
+
+	CreateDirectory(PATH_KANSI_APLNEW, NULL);
+	CreateDirectory(PATH_KANSI_APLOLD, NULL);
+
+	BOOL bRet = dllCheckAplVersion(4, PATH_KANSI, 2);
+
+	bRet = funcUpdateCopyExecParam(ML_DT_VERSIONDOWN);
+
+	bRet = pubFuncAplEndRequest();
+
+	//lngtime = MN_MAIL_INTERVAL                  ' 現在タイマ値初期化
+	//	tmrAplTimer.Enabled = True                  ' 現在タイマ起動
+
+	//	lngChangeKind = ML_DT_VERSIONDOWN
+
+	return true;
+}
+
+/** @brief		frmKVer_CmdClear
+*				Delete the files in the work folder
+*  @param		mlngChkFolderType type of floder filter
+*  @param		stKverDatat structData return to client
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdClear(INT mlngChkFolderType, FRM_KVER_LOAD* &stKverDatat)
+{
+	
+	frmKVer_WorkFolderRemove();
+	frmKVer_VersionDisp(mlngChkFolderType, stKverDatat);
+	pubFuncUpdateUnkaiStatus(TYPE_KANSI, BOOTINFO_UNKAI_CLEAR);
+	pubFuncAplUpdateUnkaiStatus(BOOTINFO_KEYNAMEKANSI, BOOTINFO_UNKAI_NASHI);
+	funcUpdateCopyExecParam(ML_DT_CLEAR);
+	SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+
+
+	CreateDirectory(PATH_KANSI_APLNEW, NULL);
+	CreateDirectory(PATH_KANSI_APLOLD, NULL);
+	return true;
+}
+
+/** @brief		frmKVer_WorkFolderRemove
+*				Delete the files in the work folder
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_WorkFolderRemove()
+{
+	// remove form
+	return true;
+}
+
+/** @brief		frmKVer_CmdOutPut
+*				File copy MN_VERSI_FILE to Output file path (overwrite if it already exists)
+*  @param		strWriteDir : output folder from user
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdOutPut(std::string sInputPass)
+{
+	//strStationName = gsGetStationEkiName
+	string strStationName = gsGetStationEkiName();
+	//If Len(strWriteDir) = 0 Then
+	//	Exit Sub
+	//	End If
+	//bRet = dllKansiCreateVerFile(mlngChkFolderType, MN_VERSI_FILE, VERLISTKIND_REPORT)
+	//	If bRet Then
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_FILE, CREATE_FILE_OK, 0)
+	//	Else
+	//	lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE
+	//	Call sLogTraceReq(LTYP_ERROR, L3AN_FILE, CREATE_FILE_ERROR, lngErrCode)
+
+	//	Call SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ)
+
+	if (sInputPass == "") return FALSE;
+	SendMessageProgress(ML_ID_PRGBAR_SHOW_REQ, PRG_VERSION_KANRI);
+	//If fso.FileExists(MN_VERSI_FILE) = False Then
+	BOOL bRet = dllKansiCreateVerFile(mlngChkFolderType, MN_VERSI_FILE, VERLISTKIND_REPORT);
+	if (bRet) sHoshuLogTraceReq(LTYP_NORMAL, L3AN_FILE, CREATE_FILE_OK, 0);
+	else
+	{
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_FILE_IO + ECOD_AFILE;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_FILE, CREATE_FILE_ERROR, lngErrCode);
+	}
+	SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+	//    If fso.FileExists(MN_VERSI_FILE) = False Then
+	if (!PathFileExists(MN_VERSI_FILE)) SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+
+	string strFileName = MN_VERSI_FILE;
+	if (!PathFileExists(sInputPass.c_str())) CreateDirectory(sInputPass.c_str(),NULL);
+
+	//If fso.FolderExists(strWriteDir) = False Then
+	//	'コピー先フォルダ作成
+	//	fso.CreateFolder(strWriteDir)
+	//	End If
+
+	//	'コピー先ファイル名作成
+	//	strCopySaki = strWriteDir & "\" & strStationName & "_" & strFileName
+
+	//	'ファイルコピー（既に存在した場合は上書きするする）
+	//	fso.CopyFile MN_VERSI_FILE, strCopySaki, True
+
+	string strCopySaki = sInputPass + "\\" + strStationName + "_" + strFileName;
+	fnCopyFileToDirectory(MN_VERSI_FILE, strCopySaki);
+	SendMessageProgress(ML_ID_PRGBAR_HIDE_REQ);
+	sHoshuLogTraceReq(LTYP_NORMAL, L3AN_FILE, VERASION_INFO_OUTPUT_OK, 0);
+
+	return true;
+}
+
+/** @brief		frmKVer_CmdRemove
+*				Remove the media
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CmdRemove()
+{
+	//pfRemove
+	return true;
+}
+
+BYTE byDeshuCnctSet[CONECT_CORNER_MAXINDEX];
+BYTE byGateCnctSet[CONECT_CORNER_MAXINDEX];
+
+/** @brief		frmKVer_WorktoNow_Before1
+*				Work → Perform the following processing before copying
+*				Check that the monitoring board application has not started
+*				Check for the existence of undelivered data
+*				De collection communication disconnection
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_WorktoNow_Before1()
+{
+	//Dim iCnt As Integer
+
+	//	fWorktoNow_Before1 = False
+
+	//	'-------------------------------------------------------------------------------------------
+	//	'監視盤アプリ未起動時は、本シーケンスを実施しない
+	//	'-------------------------------------------------------------------------------------------
+	//	If CheckAppStart(PROC_KANRI) = 0 Then
+	//	MsgBox "保守単独起動のため、ワーク→実行コピーが行えません。", _
+	//	vbOKOnly + vbCritical, _
+	//	"ワーク→実行 コピー"
+	//	Exit Function
+	//	End If
+
+	//	'-------------------------------------------------------------------------------------------
+	//	'締切未送データが存在する場合、本シーケンスを実施しない
+	//	'-------------------------------------------------------------------------------------------
+	//	If fChkSimekiriMisouUmu = False Then
+	//	MsgBox "締切未送データがあるため、ワーク→実行コピーが行えません。", _
+	//	vbOKOnly + vbCritical, _
+	//	"ワーク→実行 コピー"
+	//	Exit Function
+	//	End If
+
+	if(CheckAppStart(PROC_KANRI) == 0) return ERROR;
+	if (frmKVer_CheckSimekiriMisouUmu() == 0) return ERROR;
+	SendMessageProgress(ML_ID_PRGBAR_SHOW_REQ, PRG_TRANS_KANRI);
+	//Erase byDeshuCnctSet  'デ集切離設定初期化
+	//	Erase byGateCnctSet   '自改切離設定初期化
+	//	miErrorSts = 0        '異常時通信種別初期化
+	//	miErrorDisp = 0       '異常時異常時表示文言初期化
+
+	//	'デ集の接続／切断設定を取得
+	//	For iCnt = CNT_MIN To CONECT_CORNER_MAXINDEX
+	//	If gblnCornerSet(iCnt) = True Then
+	//	If(0 = pfGetJyouiKikiConectSet(DESHU_ID + iCnt)) Then
+	//	byDeshuCnctSet(iCnt) = 1
+	//	End If
+	//	End If
+	//	Next
+
+	for (int iCnt = CNT_MIN; iCnt < CONECT_CORNER_MAXINDEX; ++iCnt)
+	{
+		if (gblnCornerSet[iCnt])
+		{
+			if (frmKVer_GetJyouiKikiConectSet(DESHU_ID + iCnt) == 0) byDeshuCnctSet[iCnt] = 1;
+		}
+	}
+	//'自改の接続／切断設定を取得
+	//	For iCnt = CNT_MIN To CONECT_JIKAI_CHK_MAX
+	//	If gudtDisp(iCnt).intJiso = JissouUmu.jissou Then
+	//	If(0 = pfGetGateConectSet(iCnt + 1)) Then
+	//	byGateCnctSet(iCnt) = 1
+	//	End If
+	//	End If
+	//	Next
+
+	for (int iCnt = CNT_MIN; iCnt < CONECT_JIKAI_CHK_MAX; ++iCnt)
+	{
+		if (gudtDisp[iCnt].intJiso = jissou)
+		{
+			if (frmKVer_GetGateConectSet(iCnt + 1) == 0) byGateCnctSet[iCnt] = 1;
+		}
+	}
+	//If False = pfKill_TusinConect(ML_DT_DESHU) Then
+	//	'通信切断異常処理
+	//	Call ConnctErrorProc(DESHU_CONNECT, ERROR_TUSHIN_DISP)
+	//	Exit Function
+
+	//	End If
+
+	if (frmKVer_Kill_TusinConect(ML_DT_DESHU))
+	{
+		frmKVer_ConnctErrorProc(DESHU_CONNECT, ERROR_TUSHIN_DISP);
+		return ERROR;
+	}
+	return true;
+}
+
+/** @brief		frmKVer_CheckSimekiriMisouUmu
+*				If there is data that has not been sent due to the deadline, this sequence will not be executed.
+*				Does the deadline output data exist? (D:/KANSI/SHUKEI/OUT_DATA/CORNER ## / SIME ##. DAT)
+*  @return		TRUE: exist, FALSE: not exist
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_CheckSimekiriMisouUmu()
+{
+	//Dim objFso As New FileSystemObject                  ' ファイルシステムオブジェクト
+	//	Dim nLoop As Integer                                ' ループ
+	//	Dim bEnable As Boolean                              ' ボタン状態
+	//	Dim szFileName As String
+	string szFileName;
+	//	On Error GoTo ErrorHandler                          ' エラーハンドルの登録
+
+	//	fChkSimekiriMisouUmu = True
+
+	//	For nLoop = 0 To UBound(gblnCornerSet)
+
+	//	bEnable = False
+	//	If gblnCornerSet(nLoop) = True Then
+	//	' /////////////////////////////////////////////////////////////////////////
+	//	' // 締切出力データは存在するか？（D:\KANSI\SHUKEI\OUT_DATA\CORNER##\SIME##.DAT）
+	//		szFileName = Replace(PATH_SHUKEI_SHIMEDAT, "##", Format(nLoop + 1, "0#"))
+	//		If objFso.FileExists(szFileName) = True Then
+	//			fChkSimekiriMisouUmu = False
+	//		Exit Function
+	//		End If
+	//	End If
+
+	//	Next nLoop
+
+	//	Set objFso = Nothing
+
+	for (int i = 0; i < sizeof(gblnCornerSet) / sizeof(BOOL); ++i)
+	{
+		if (gblnCornerSet[i])
+		{
+			string sWork = "0" + to_string(i + 1);
+			CHAR* path = PATH_SHUKEI_SHIMEDAT;
+			szFileName = replace(path,"##", sWork.c_str());
+
+			if (PathFileExists(szFileName.c_str()))
+				return FALSE;
+			
+		}
+	}
+	return TRUE;
+}
+
+/** @brief		frmKVer_GetJyouiKikiConectSet
+*				Acquire communication connection / disconnection settings of higher-level device
+*  @param		iKansiId
+*  @return		1 : Detachment setting  0:Connection settings
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+INT frmKVer_GetJyouiKikiConectSet(int iKansiId)
+{
+	//pfGetJyouiKikiConectSet = -1
+
+	//	'ＩＤ別情報操作クラスの生成
+	//	Set Idinf_KansiSettei = New IdInfProc
+	//	'共有エリアオープン
+	//	Idinf_KansiSettei.ProcMode = DATA_ID.Data_Id_KansiSettei
+	//	Idinf_KansiSettei.IdOpen
+	//	If Idinf_KansiSettei.Errsts <> 0 Then
+	//	Set Idinf_KansiSettei = Nothing
+	//	Exit Function
+	//	End If
+
+	Idinf_KansiSettei = new CIdInfProc(Data_Id_KansiSettei);      	// 監視装置設定データエリア
+	Idinf_KansiSettei->IdOpen();
+
+	if (Idinf_KansiSettei->GetErrsts()!= 0)
+	{
+		delete Idinf_KansiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+
+	//'監視設定エリアをＬＯＣＫする。
+	//	Idinf_KansiSettei.IdLock
+	//	If Idinf_KansiSettei.Errsts <> 0 Then
+	//	Idinf_KansiSettei.IdFree
+	//	Set Idinf_KansiSettei = Nothing
+	//	Exit Function
+	//	End If
+
+	Idinf_KansiSettei->IdLock();
+	if (Idinf_KansiSettei->GetErrsts() != 0)
+	{
+		Idinf_KansiSettei->IdFree();
+		delete Idinf_KansiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+
+	//'監視設定エリアIDを設定
+	//	Idinf_KansiSettei.id = iKansiId
+	//	Idinf_KansiSettei.IdGet
+	//	If Idinf_KansiSettei.Errsts <> 0 Then
+		//	Idinf_KansiSettei.IdFree
+		//	Set Idinf_KansiSettei = Nothing
+		//	Exit Function
+	//	End If
+
+	Idinf_KansiSettei->SetId(iKansiId);
+	Idinf_KansiSettei->GetId();
+	if (Idinf_KansiSettei->GetErrsts() != 0)
+	{
+		Idinf_KansiSettei->IdFree();
+		delete Idinf_KansiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+	//pfGetJyouiKikiConectSet = Idinf_KansiSettei.DataArea(0)   '設定内容
+	//	Idinf_KansiSettei.IdFree
+	//	Set Idinf_KansiSettei = Nothing
+
+	Idinf_KansiSettei->GetDataArea(0);
+	Idinf_KansiSettei->IdFree();
+	delete Idinf_KansiSettei;
+	
+	return 0;
+}
+
+/** @brief		frmKVer_GetGateConectSet
+*				Get self-improvement communication connection / disconnection settings
+*  @param		Unit number
+*  @return		1 : Detachment setting  0:Connection settings
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+INT frmKVer_GetGateConectSet(int iGouki)
+{
+
+	//pfGetGateConectSet = -1
+
+	//	Set Idinf_JikaiSettei = New IdInfProc
+	//	'自改設定エリアをオープンする。
+	//	Idinf_JikaiSettei.ProcMode = DATA_ID.Data_Id_JikaiSettei
+	//	Idinf_JikaiSettei.IdOpen
+	//	If Idinf_JikaiSettei.Errsts <> 0 Then
+	//	Set Idinf_JikaiSettei = Nothing
+	//	Exit Function
+	//	End If
+	Idinf_JikaiSettei = new CIdInfProc(Data_Id_JikaiSettei);
+	Idinf_JikaiSettei->IdOpen();
+
+	if (Idinf_JikaiSettei->GetErrsts() != 0)
+	{
+		delete Idinf_JikaiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+	//'自改設定エリアをＬＯＣＫする。
+	//	Idinf_JikaiSettei.IdLock
+	//	If Idinf_JikaiSettei.Errsts <> 0 Then
+	//	Idinf_JikaiSettei.IdFree
+	//	Set Idinf_JikaiSettei = Nothing
+	//	Exit Function
+	//	End If
+	Idinf_JikaiSettei->IdLock();
+
+	if (Idinf_JikaiSettei->GetErrsts() != 0)
+	{
+		Idinf_JikaiSettei->IdFree();
+		delete Idinf_JikaiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+	//'エリアの内容を読み込む。
+	//	Idinf_JikaiSettei.id = IdGate.JIKAI_CONECT_SETTEI
+	//	Idinf_JikaiSettei.GetJikai_Sts iGouki - 1
+	//	If Idinf_JikaiSettei.Errsts <> 0 Then
+	//	Idinf_JikaiSettei.IdFree
+	//	Set Idinf_JikaiSettei = Nothing
+	//	Exit Function
+	//	End If
+
+	Idinf_JikaiSettei->SetId(ID_GATE_TUSIN_SETTEI);
+	Idinf_JikaiSettei->GetIdStsMode(iGouki - 1); // long.ld check ??
+	if (Idinf_JikaiSettei->GetErrsts() != 0)
+	{
+		Idinf_JikaiSettei->IdFree();
+		delete Idinf_JikaiSettei; // long.ld note delete may lead crash
+		return -1;
+	}
+
+	//'設定内容を取得
+	//	pfGetGateConectSet = Idinf_JikaiSettei.DataArea(iGouki - 1)
+
+	//	'状態：正常
+	//	Idinf_JikaiSettei.IdFree
+	//	Set Idinf_JikaiSettei = Nothing
+
+	Idinf_JikaiSettei->GetDataArea(iGouki - 1);
+	Idinf_JikaiSettei->IdFree();
+	delete Idinf_JikaiSettei;
+
+	return 0;
+}
+
+/** @brief		frmKVer_Kill_TusinConect
+*				Disconnects the communication line of the specified external device
+*  @param		type : External device request type
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_Kill_TusinConect(Ml_KIKIType dwKiki)
+{
+	//Dim bRet As Boolean                 'メール送信戻り値
+	//	Dim iCnt As Integer                 'カウンター
+	//	Dim lngErrCode As Long              'エラーコード
+
+	//	pfKill_TusinConect = False
+
+	//	'-------------------------------------------------------------------------------------------
+	//	'通信設定要求CMDメッセージ作成
+	//	'-------------------------------------------------------------------------------------------
+	//	'ヘッダ部共通作成処理
+	//	Call SendMailHeader(ML_ID_CONECT_CMD, MlSize.CONECT_CMD)
+
+	frmKVer_SendMailHeader(ML_ID_CONNECT_SET_REQ_CMD, CONECT_CMD);
+
+	udtMail.dwKikiType = dwKiki;
+	udtMail.dwRequest = ML_REQUEST_SETUDAN;
+	//udtMail.dwRequestKIKI = dwKiki
+	//	udtMail.dwRequestConectType = ML_REQUEST_SETUDAN
+	//	For iCnt = CNT_MIN To CONECT_JIKAI_CHK_MAX
+	//	udtMail.dwGouki(iCnt) = ML_TARGET_OFF
+	//	Next
+
+	for (size_t iCnt = CNT_MIN; iCnt < CONECT_JIKAI_CHK_MAX; ++iCnt)
+	{
+		udtMail.dwGateNo[iCnt] = ML_TARGET_OFF;
+	}
+	//If dwKiki = ML_DT_JIKAI Then
+	//	'外部機器要求種別が自改の場合
+	//	For iCnt = CNT_MIN To CONECT_JIKAI_CHK_MAX
+	//	'改札機が実装されているか？
+	//	If gudtDisp(iCnt).intJiso = JissouUmu.jissou Then
+	//	udtMail.dwGouki(iCnt) = ML_TARGET_ON
+	//	End If
+	//	Next
+	//	Else
+	//'外部機器要求種別が自改以外の場合
+	//	For iCnt = 0 To UBound(gblnCornerSet)
+	//	'コーナ接続されているか？
+	//	If gblnCornerSet(iCnt) = True Then
+	//	udtMail.dwGouki(iCnt) = ML_TARGET_ON
+	//	End If
+	//	Next
+	//	End If
+
+	if (dwKiki == ML_DT_JIKAI)
+	{
+		for (size_t iCnt = CNT_MIN; iCnt < CONECT_JIKAI_CHK_MAX; ++iCnt)
+		{
+			if (gudtDisp[iCnt].intJiso == jissou) udtMail.dwGateNo[iCnt] = ML_TARGET_ON;
+		}
+	}
+	else
+	{
+		for (size_t iCnt = 0; iCnt < sizeof(gblnCornerSet)/ sizeof(BOOL); iCnt++)
+		{
+			if (gblnCornerSet[iCnt]) udtMail.dwGateNo[iCnt] = ML_TARGET_ON;
+		}
+	}
+	//bRet = DssSendMail(MAIL_SLOT_KANMA, MlSize.CONECT_CMD, udtMail.mlHeader)
+	//	If False = bRet Then
+	//	'「通信接続・切断画面：通信設定要求CMD送信異常」ログ出力
+	//	lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_MAIL_IO + ECOD_MSEND
+	//	Call sLogTraceReq(LTYP_ERROR, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, lngErrCode)
+	//	Exit Function
+	//	Else
+	//	'「通信接続・切断画面：通信設定要求CMD送信正常」ログ出力
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, 0)
+	//	End If
+
+	//	pfKill_TusinConect = True
+	MailHandle_Kanma = fDssMailOpen("\\\\.\\MailSlot\\監マ    ");
+
+	// メール送信
+	ML_KYOTU_INF strWriteData;
+	strWriteData.mlHeader = udtMail.mlHeader;
+
+	BOOL bRet = fDssMailWrite(MailHandle_Kanma, sizeof(strWriteData), strWriteData);
+
+	if (!bRet)
+	{
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_MAIL_IO + ECOD_MSEND;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, lngErrCode);
+		return FALSE;
+	}
+	else sHoshuLogTraceReq(LTYP_NORMAL, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, 0);
+
+	fDssMailClose(MailHandle_Kanma);
+
+	return true;
+}
+
+/** @brief		frmKVer_ConnctErrorProc
+*				Disconnects the communication line of the specified external device
+*  @param		iTusinSts : Communication type setting at the time of abnormality
+*  @param		iErrorDisp: Abnormal time table wording setting
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_ConnctErrorProc(LONG iTusinSts , LONG iErrorDisp )
+{
+
+	//'異常時通信種別設定
+	//	miErrorSts = iTusinSts
+	miErrorSts = iTusinSts;
+	//	'異常時表文言設定
+	//	miErrorDisp = iErrorDisp
+	miErrorDisp = iErrorDisp;
+	//	'デ集接続
+	//	pfConnect_TusinConect(ML_DT_DESHU)
+
+
+	frmKVer_Connect_TusinConect(ML_DT_DESHU);
+	return true;
+}
+
+/** @brief		frmKVer_Connect_TusinConect
+*				Connect the communication line of the specified external device
+*  @param		type : External device request type
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+BOOL frmKVer_Connect_TusinConect(Ml_KIKIType dwKiki)
+{
+	//pfConnect_TusinConect = False
+
+	//	'-------------------------------------------------------------------------------------------
+	//	'通信設定要求CMDメッセージ作成
+	//	'-------------------------------------------------------------------------------------------
+	//	'ヘッダ部共通作成処理
+	//	Call SendMailHeader(ML_ID_CONECT_CMD, MlSize.CONECT_CMD)
+
+	//	'データ部設定
+	//	udtMail.dwRequestKIKI = dwKiki
+	//	udtMail.dwRequestConectType = ML_REQUEST_CONECT
+	//	For iCnt = CNT_MIN To CONECT_JIKAI_CHK_MAX
+	//	udtMail.dwGouki(iCnt) = ML_TARGET_OFF
+	//	Next
+
+	frmKVer_SendMailHeader(ML_ID_CONNECT_SET_REQ_CMD, CONECT_CMD);
+
+	udtMail.dwKikiType = dwKiki;
+	udtMail.dwRequest = ML_REQUEST_CONECT;
+
+	for (size_t iCnt = CNT_MIN; iCnt < CONECT_JIKAI_CHK_MAX; iCnt++)
+	{
+		udtMail.dwGateNo[iCnt] = ML_TARGET_OFF;
+	}
+	//If dwKiki = ML_DT_JIKAI Then
+	//	'外部機器要求種別が自改の場合
+	//	For iCnt = CNT_MIN To CONECT_JIKAI_CHK_MAX
+	//	'改札機が実装されているか？
+	//	If gudtDisp(iCnt).intJiso = JissouUmu.jissou Then
+	//	udtMail.dwGouki(iCnt) = byGateCnctSet(iCnt)
+	//	End If
+	//	Next
+	//	Else
+	//	'外部機器要求種別が自改以外の場合
+	//	For iCnt = 0 To UBound(gblnCornerSet)
+	//	'コーナ接続されているか？
+	//	If gblnCornerSet(iCnt) = True Then
+	//	udtMail.dwGouki(iCnt) = byDeshuCnctSet(iCnt)
+	//	End If
+	//	Next
+	//	End If
+
+	if (dwKiki == ML_DT_JIKAI) 
+	{
+		for (size_t iCnt = CNT_MIN; iCnt < CONECT_JIKAI_CHK_MAX; iCnt++)
+		{
+			if (gudtDisp[iCnt].intJiso == jissou) udtMail.dwGateNo[iCnt] = byGateCnctSet[iCnt];
+		}
+	}
+	else
+	{
+		for (size_t iCnt = 0; iCnt < sizeof(gblnCornerSet) / sizeof(BOOL); iCnt++)
+		{
+			if (gblnCornerSet[iCnt]) udtMail.dwGateNo[iCnt] = byDeshuCnctSet[iCnt];
+		}
+	}
+	//bRet = DssSendMail(MAIL_SLOT_KANMA, MlSize.CONECT_CMD, udtMail.mlHeader)
+	//	If False = bRet Then
+	//	'「通信接続・切断画面：通信設定要求CMD送信異常」ログ出力
+	//	lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_MAIL_IO + ECOD_MSEND
+	//	Call sLogTraceReq(LTYP_ERROR, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, lngErrCode)
+	//	Exit Function
+	//	Else
+	//	'「通信接続・切断画面：通信設定要求CMD送信正常」ログ出力
+	//	Call sLogTraceReq(LTYP_NORMAL, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, 0)
+	//	End If
+
+	//	pfKill_TusinConect = True
+	MailHandle_Kanma = fDssMailOpen("\\\\.\\MailSlot\\監マ    ");
+
+	// メール送信
+	ML_KYOTU_INF strWriteData;
+	strWriteData.mlHeader = udtMail.mlHeader;
+
+	BOOL bRet = fDssMailWrite(MailHandle_Kanma, sizeof(strWriteData), strWriteData);
+
+	if (!bRet)
+	{
+		LONG lngErrCode = EDAI_KANSHI + ECHU_HOSHU + ESHO_MAIL_IO + ECOD_MSEND;
+		sHoshuLogTraceReq(LTYP_ERROR, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, lngErrCode);
+		return FALSE;
+	}
+	else sHoshuLogTraceReq(LTYP_NORMAL, L3AN_SEND, CONECT_CONECTSETTEI_CMD_SEND, 0);
+
+	fDssMailClose(MailHandle_Kanma);
+
+	return TRUE;
+}
+
+/** @brief		frmKVer_SendMailHeader
+*				Create outgoing mail (header part)
+*  @param		dwId : Email ID
+*  @param		dwSize : Email size
+*  @return		TRUE: success, FALSE: fail
+*  @author		TSDV
+*  @date		2021/06/07 Create
+*/
+VOID frmKVer_SendMailHeader(LONG dwId, LONG dwSize)
+{
+	//udtMail.mlHeader.dwId = dwId
+	//	udtMail.mlHeader.dwSize = dwSize
+	//	udtMail.mlHeader.dwProid = RHOSHU_ID
+	//	udtMail.mlHeader.dwSubArea = 0
+
+	//	bytWork = StrConv(MAIL_SLOT_HOSHU, vbFromUnicode)
+	//	'動的配列の内容をログパラメータ構造体の静的配列に格納する。
+	//	For i = 0 To UBound(bytWork)
+	//	'Null値になったら処理を抜ける。
+	//	If bytWork(i) = vbVEmpty Then Exit For
+
+	//	udtMail.byMailName(i) = bytWork(i)
+
+	//	'動的配列の最大要素になったら処理を抜ける
+	//	If i = UBound(bytWork) Then Exit For
+	//	Next
+	
+
+	udtMail.mlHeader.dwId = dwId;
+	udtMail.mlHeader.dwSize = dwSize;
+	udtMail.mlHeader.dwProid = RHOSHU_ID;
+	udtMail.mlHeader.dwSubArea = 0;
+	string mSHoshu(MAIL_SLOT_HOSHU);
+	for (size_t i = 0; i < mSHoshu.size(); ++i)
+	{
+		if (mSHoshu[i] != ' ') udtMail.cMailSlotName[i] = mSHoshu[i];
+	}
+	
+}
